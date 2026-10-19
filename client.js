@@ -31,7 +31,7 @@
     // A late anonymous GET must never overwrite a newly authenticated session.
     if (session === sentSession && response.headers.has('X-Fire-Session')) remember(response.headers.get('X-Fire-Session'));
     if (response.status === 401) {
-      remember('');
+      if (session === sentSession) remember('');
       if (retry && (!options.method || options.method === 'GET')) return request(path, options, false);
       throw new Error('登录已失效，请重新登录后提交。');
     }
