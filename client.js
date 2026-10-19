@@ -23,14 +23,16 @@
   async function request(path, options = {}, retry = true) {
     const headers = new Headers(options.headers);
     const sentSession = session;
+    const requestedGeneration = generation;
     if (session) headers.set('X-Fire-Session', session);
     let response;
     try {
       response = await fetch(backend + '/api/pages' + route(path), {...options, headers, credentials: 'omit', redirect: 'error', cache: 'no-store'});
     } catch (_) { throw new Error('暂时无法连接活动服务，请稍后重试。'); }
     // A late anonymous GET must never overwrite a newly authenticated session.
-    if (session === sentSession && response.headers.has('X-Fire-Session')) remember(response.headers.get('X-Fire-Session'));
+    if (generation === requestedGeneration && session === sentSession && response.headers.has('X-Fire-Session')) remember(response.headers.get('X-Fire-Session'));
     if (response.status === 401) {
+      if (generation !== requestedGeneration) throw new Error('页面已切换。');
       if (session === sentSession) remember('');
       if (retry && (!options.method || options.method === 'GET')) return request(path, options, false);
       throw new Error('登录已失效，请重新登录后提交。');
