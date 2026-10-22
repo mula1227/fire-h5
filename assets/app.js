@@ -1,5 +1,20 @@
 window.initFirePage = () => {
 (() => {
+  document.querySelectorAll('form[data-material-review]').forEach(form => {
+    const note = form.querySelector('[name="note"]');
+    const label = form.querySelector('label[for="id_note"]');
+    if (!note || !label) return;
+    const update = () => {
+      const rejected = form.querySelector('[name="decision"]:checked')?.value === 'rejected';
+      note.required = rejected;
+      label.textContent = rejected ? '不通过原因 *' : '审核备注（选填）';
+      note.placeholder = rejected ? '请说明不通过原因，便于参与者修改材料。' : '通过无需填写，可直接提交审核结果。';
+    };
+    form.querySelectorAll('[name="decision"]').forEach(input => input.addEventListener('change', update));
+    update();
+  });
+})();
+(() => {
   const category = document.querySelector('#id_category');
   if (!category) return;
   const labels = {
